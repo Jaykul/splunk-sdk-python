@@ -36,25 +36,31 @@ service = client.connect(
     app=app)
 
 collection = "test"
-urlAdmin = "storage/collections"
-urlData = "storage/collection-data"
-urlAdminItem = urlAdmin + "/" + collection
-urlDataItem = urlData + "/" + collection
+urlConf = "storage/collections-conf"
+urlCommon = "storage/collections"
+urlConfItem = urlConf + "/" + collection
+urlData = urlCommon + "/" + collection + "/data"
+urlIndex = urlCommon + "/" + collection + "/indexes"
 
 try:
-    service.get(urlAdminItem)
-    service.delete(urlAdminItem)
+    service.delete(urlConfItem)
 except HTTPError, e:
     if e.status != 404:
         raise
 
-service.post(urlAdmin, name = collection)
+service.post(urlConf, name = collection)
+print service.get(urlConfItem).body.read()
 
 import json
 
-data = { '_id': 33, 'a' : 1, 'b' : 2, 'c' : 3, 'd' : 4, 'e' : 5 }
-service.post(urlDataItem, body=json.dumps(data))
+data = { '_id': "33", 'a' : 1, 'b' : 2, 'c' : 3, 'd' : 4, 'es' : "5" }
+service.post(urlData, body=json.dumps(data))
+urlDataItem = urlData + "/33"
+print service.get(urlDataItem).body.read()
+service.delete(urlDataItem)
 
-data = { '_id': None, 'a' : 1, 'b' : 2, 'c' : 3, 'd' : 4, 'e' : 5 }
-service.post(urlDataItem, body=json.dumps(data))
-
+index = { 'name': 'index', 'key':{'a' : 1, 'b' : 1, 'c' : 1} }
+service.post(urlIndex, body=json.dumps(index))
+urlIndexItem = urlIndex + "/index"
+print service.get(urlIndexItem).body.read()
+service.delete(urlIndexItem)
